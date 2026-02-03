@@ -65,4 +65,38 @@ public class Land {
         this.roles = (roles != null) ? roles : getDefaultRoles();
         this.createdAt = createdAt;
     }
+
+    /** Claims new regions for the land */
+    public void claimRegions(List<Region> newRegions) {
+        this.regions.addAll(newRegions);
+    }
+
+    /** Getters for the fields */
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public List<Region> getRegions() {
+        return regions;
+    }
+
+    public Map<UUID, String> getMembers() {
+        return members;
+    }
+
+    public Map<String, LandRole> getRoles() {
+        return roles;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
 }

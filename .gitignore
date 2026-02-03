@@ -57,5 +57,5 @@ desktop.ini
 *~
 
 # Template specific
-libs/HytaleServer.jar
+# libs/HytaleServer.jar
 buildSrc/
