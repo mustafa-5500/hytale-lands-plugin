@@ -1,14 +1,14 @@
 {
-    "Group": "Example",
-    "Name": "ExamplePlugin",
+    "Group": "Lands",
+    "Name": "LandsPlugin",
     "Version": "0.0.2",
-    "Description": "An example plugin for HyTale!",
+    "Description": "Hytale Land Claiming Plugin",
     "Authors": [
         {
-            "Name": "It's you!"
+            "Name": "AlmondStafa"
         }
     ],
-    "Website": "example.org",
+    "Website": "",
     "ServerVersion": "*",
     "Dependencies": {
         
@@ -17,6 +17,6 @@
         
     },
     "DisabledByDefault": false,
-    "Main": "org.example.plugin.ExamplePlugin",
+    "Main": "org.almond.lands.LandsPlugin",
     "IncludesAssetPack": true
 }

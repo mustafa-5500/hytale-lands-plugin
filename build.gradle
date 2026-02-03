@@ -52,7 +52,7 @@ dependencies {
     if (hasHytaleHome) {
         runtimeOnly(files("$hytaleHome/install/$patchline/package/game/latest/Server/HytaleServer.jar"))
     }
-
+    implementation files('libs/HytaleServer.jar')
     // Your dependencies here
 }
 
