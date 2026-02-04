@@ -71,6 +71,36 @@ public class Land {
         this.regions.addAll(newRegions);
     }
 
+    /** Unclaims regions from the land */
+    public void unclaimRegions(List<Region> regionsToUnclaim) {
+        this.regions.removeAll(regionsToUnclaim);
+    }
+
+    /** Merges overlapping or adjacent regions to optimize storage */
+    public void mergeRegions() {
+        List<Region> merged = new ArrayList<>();
+        for (Region region : this.regions) {
+            boolean mergedFlag = false;
+            for (int i = 0; i < merged.size(); i++) {
+                Region mRegion = merged.get(i);
+                if ((mRegion.isAdjacentTo(region)) && 
+                    !(mRegion.overlaps(region)) && 
+                    (mRegion.isSamePlaneAs(region))) {
+                    Region newRegion = mRegion.merge(region);
+                    merged.set(i, newRegion);
+                    mergedFlag = true;
+                    break;
+                }
+            }
+            // If not merged, add to merged list
+            if (!mergedFlag) {
+                merged.add(region);
+            }
+        }
+        // Reset regions to merged list
+        this.regions = merged;
+    }
+
     /** Getters for the fields */
     public UUID getId() {
         return id;

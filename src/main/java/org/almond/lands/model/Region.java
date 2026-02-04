@@ -127,6 +127,35 @@ public class Region {
         return remainingRegions;
     }
 
+    /** Checks if two Regions share the same plane along 2 axis */
+    public boolean isSamePlaneAs(Region other){
+        boolean xSame = this.corner1.getY() == other.corner1.getY() && this.corner2.getY() == other.corner2.getY() &&
+                        this.corner1.getZ() == other.corner1.getZ() && this.corner2.getZ() == other.corner2.getZ();
+        
+        boolean ySame = this.corner1.getX() == other.corner1.getX() && this.corner2.getX() == other.corner2.getX() &&
+                        this.corner1.getZ() == other.corner1.getZ() && this.corner2.getZ() == other.corner2.getZ();
+        
+        boolean zSame = this.corner1.getX() == other.corner1.getX() && this.corner2.getX() == other.corner2.getX() &&
+                        this.corner1.getY() == other.corner1.getY() && this.corner2.getY() == other.corner2.getY();
+        
+        return xSame || ySame || zSame;
+    };
+
+    /** Merge Regions */
+    public Region merge(Region other){
+        Vector3i newCorner1 = new Vector3i(
+            Math.min(this.corner1.getX(), other.corner1.getX()),
+            Math.min(this.corner1.getY(), other.corner1.getY()),
+            Math.min(this.corner1.getZ(), other.corner1.getZ())
+        );
+        Vector3i newCorner2 = new Vector3i(
+            Math.max(this.corner2.getX(), other.corner2.getX()),
+            Math.max(this.corner2.getY(), other.corner2.getY()),
+            Math.max(this.corner2.getZ(), other.corner2.getZ())
+        );
+        return new Region(newCorner1, newCorner2);
+    };
+
     /** Calculates the volume of the region */
     public long getVolume(){
         long length = corner2.getX() - corner1.getX() + 1;

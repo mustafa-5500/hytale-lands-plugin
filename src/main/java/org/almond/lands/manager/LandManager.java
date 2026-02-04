@@ -81,6 +81,7 @@ public class LandManager {
                 }
             }
             land.claimRegions(newRegions);
+            land.mergeRegions();
             // Merge regions if necessary, to optimize storage and lookup (not implemented here for simplicity)
         } else {
             throw new IllegalArgumentException("No land selected for the player.");
