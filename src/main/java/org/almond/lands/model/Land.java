@@ -17,7 +17,7 @@ public class Land {
     private UUID id;                    // Unique land identifier
     private String name;                // Display name
     private UUID owner;                 // Owner's player UUID
-    private List<Region> regions;       // Claimed cuboid regions
+    private Set<Region> regions;       // Claimed cuboid regions
     private Map<UUID, String> members;  // Player UUID -> Role name
     private Map<String, LandRole> roles; // Role name -> Role definition
     private long createdAt;             // Timestamp
@@ -56,12 +56,12 @@ public class Land {
     }
 
     /** Constructor to create a land with given parameters */
-    public Land(UUID id, String name, UUID owner, List<Region> regions, Map<UUID, String> members,
+    public Land(UUID id, String name, UUID owner, Set<Region> regions, Map<UUID, String> members,
                 Map<String, LandRole> roles, long createdAt) {
         this.id = id;
         this.name = name;
         this.owner = owner;
-        this.regions = regions;
+        this.regions = new HashSet<>(regions);
         this.members = members;
         // If roles is null, use default roles
         this.roles = (roles != null) ? roles : getDefaultRoles();
@@ -69,18 +69,18 @@ public class Land {
     }
 
     /** Claims new regions for the land */
-    public void claimRegions(List<Region> newRegions) {
+    public void claimRegions(Set<Region> newRegions) {
         this.regions.addAll(newRegions);
     }
 
     /** Unclaims regions from the land */
-    public void unclaimRegions(List<Region> regionsToUnclaim) {
+    public void unclaimRegions(Set<Region> regionsToUnclaim) {
         this.regions.removeAll(regionsToUnclaim);
     }
 
     /** Merges adjacent regions to optimize storage */
     public void mergeRegions() {
-        List<Region> merged = new ArrayList<>();
+        Set<Region> merged = new HashSet<>();
         for (Region region : this.regions) {
             boolean mergedFlag = false;
             for (int i = 0; i < merged.size(); i++) {
@@ -116,7 +116,7 @@ public class Land {
         return owner;
     }
 
-    public List<Region> getRegions() {
+    public Set<Region> getRegions() {
         return regions;
     }
 

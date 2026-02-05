@@ -77,14 +77,13 @@ public class Region {
     };
 
     /** Subtracts another region from this one and returns the resulting regions */
-    public List<Region> subtract(Region other){
+    public Set<Region> subtract(Region other){
         if (!this.overlaps(other)) {
-            return List.of(this); // No overlap, return this region as is
+            return Set.of(this); // No overlap, return this region as is
         }
         Region intersection = this.intersection(other);
         // Calculate the 6 potential remaining regions after subtraction
-        List<Region> remainingRegions = new ArrayList<>();
-
+        Set<Region> remainingRegions = new HashSet<>();
         // Left region
         if (this.corner1.getX() < intersection.getCorner1().getX()) {
             remainingRegions.add(new Region(

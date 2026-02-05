@@ -23,7 +23,7 @@ public class LandManager {
         UUID landId = UUID.randomUUID();
         Map<UUID, String> members = new HashMap<>();
         members.put(ownerId, "owner");
-        Land land = new Land(landId, name, ownerId, List.of(region), members, null, System.currentTimeMillis());
+        Land land = new Land(landId, name, ownerId, Set.of(region), members, null, System.currentTimeMillis());
         landsById.put(landId, land);
         landsByName.put(name, land);
     }
@@ -68,7 +68,7 @@ public class LandManager {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
             Boolean adjacent = false;
-            List<Region> newRegions = new ArrayList<>();
+            Set<Region> newRegions = new HashSet<>();
             newRegions.add(newRegion);
             // Check for overlaps with existing regions
             for (Region newReg : newRegions) {
@@ -81,7 +81,7 @@ public class LandManager {
                         // overlapping also suggest adjacency
                         adjacent = true;
                         // Split the new region into non-overlapping parts
-                        List<Region> splitRegions = newReg.subtract(region);
+                        Set<Region> splitRegions = newReg.subtract(region);
                         newRegions.remove(newReg);
                         // The split Regions will not overlap with the existing regions.
                         // However, they are not guaranteed to be adjacent with each other.
@@ -107,12 +107,12 @@ public class LandManager {
     public void unclaimRegion(UUID playerId, Region regionToUnclaim) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
-            List<Region> regionsToRemove = new ArrayList<>();
-            List<Region> regionsToAdd = new ArrayList<>();
+            Set<Region> regionsToRemove = new HashSet<>();
+            Set<Region> regionsToAdd = new HashSet<>();
             for (Region region : land.getRegions()) {
                 if (region.overlaps(regionToUnclaim)) {
                     // Subtract the unclaim region from the existing region
-                    List<Region> remainingRegions = region.subtract(regionToUnclaim);
+                    Set<Region> remainingRegions = region.subtract(regionToUnclaim);
                     regionsToRemove.add(region);
                     regionsToAdd.addAll(remainingRegions);
                 }
