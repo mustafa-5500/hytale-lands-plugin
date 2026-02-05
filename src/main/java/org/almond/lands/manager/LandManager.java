@@ -67,22 +67,58 @@ public class LandManager {
     public void claimRegion(UUID playerId, Region newRegion) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
+            Boolean adjacent = false;
             List<Region> newRegions = new ArrayList<>();
             newRegions.add(newRegion);
             // Check for overlaps with existing regions
-            for (Region region : land.getRegions()) {
-                for (Region newReg : newRegions) {
+            for (Region newReg : newRegions) {
+                for (Region region : land.getRegions()) {
+                    if (region.isAdjacentTo(newReg)) {
+                        adjacent = true;
+                        newReg.addAdjacentRegion(region);
+                    }
                     if (region.overlaps(newReg)) {
+                        // overlapping also suggest adjacency
+                        adjacent = true;
                         // Split the new region into non-overlapping parts
                         List<Region> splitRegions = newReg.subtract(region);
                         newRegions.remove(newReg);
+                        // The split Regions will not overlap with the existing regions.
+                        // However, they are not guaranteed to be adjacent with each other.
+                        // This is overlooked here, since the subtracted volume is represented by the new region.
+                        // Therefore maintaining the adjacency.
                         newRegions.addAll(splitRegions);
                     }
                 }
             }
+            if(!adjacent) {
+                throw new IllegalArgumentException("The new region must be adjacent to existing land regions.");
+            }
             land.claimRegions(newRegions);
             land.mergeRegions();
             // Merge regions if necessary, to optimize storage and lookup (not implemented here for simplicity)
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Unclaims region for a land */
+    // TODO: cover the case when the regions list get split, since a land must be continuous.
+    public void unclaimRegion(UUID playerId, Region regionToUnclaim) {
+        Land land = getSelectedLandForPlayer(playerId);
+        if (land != null) {
+            List<Region> regionsToRemove = new ArrayList<>();
+            List<Region> regionsToAdd = new ArrayList<>();
+            for (Region region : land.getRegions()) {
+                if (region.overlaps(regionToUnclaim)) {
+                    // Subtract the unclaim region from the existing region
+                    List<Region> remainingRegions = region.subtract(regionToUnclaim);
+                    regionsToRemove.add(region);
+                    regionsToAdd.addAll(remainingRegions);
+                }
+            }
+            land.unclaimRegions(regionsToRemove);
+            land.claimRegions(regionsToAdd);
         } else {
             throw new IllegalArgumentException("No land selected for the player.");
         }

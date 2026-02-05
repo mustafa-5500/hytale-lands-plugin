@@ -4,7 +4,9 @@ import java.util.Map;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 import org.almond.lands.model.Region;
 import org.almond.lands.model.LandRole;
@@ -76,7 +78,7 @@ public class Land {
         this.regions.removeAll(regionsToUnclaim);
     }
 
-    /** Merges overlapping or adjacent regions to optimize storage */
+    /** Merges adjacent regions to optimize storage */
     public void mergeRegions() {
         List<Region> merged = new ArrayList<>();
         for (Region region : this.regions) {

@@ -2,11 +2,14 @@ package org.almond.lands.model;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import com.hypixel.hytale.math.vector.Vector3i;
 
 public class Region {
     private Vector3i corner1;           // First corner (min)
     private Vector3i corner2;           // Second corner (max)
+    private Set<Region> adjacentRegions = new HashSet<>(); // Adjacent regions
 
     /** Constructor to create a region from two corners */
     public Region(Vector3i corner1, Vector3i corner2){
@@ -20,6 +23,7 @@ public class Region {
             Math.max(corner1.getY(), corner2.getY()),
             Math.max(corner1.getZ(), corner2.getZ())
         );
+        this.adjacentRegions = new HashSet<>();
     };
     
     /** Checks if the given position is within the region */
@@ -124,6 +128,24 @@ public class Region {
             ));
         }
 
+        // Update adjacent regions among remaining regions
+        for (Region region1 : remainingRegions) {
+            for (Region region2 : remainingRegions) {
+                if (region1 != region2 && region1.isAdjacentTo(region2)) {
+                    region1.adjacentRegions.add(region2);
+                }
+            }
+        }
+
+        // Update adjacent regions to include those from the original region
+        for (Region adj : this.adjacentRegions) {
+            for (Region region : remainingRegions) {
+                if (region.isAdjacentTo(adj)) {
+                    region.adjacentRegions.add(adj);
+                }
+            }
+        }
+
         return remainingRegions;
     }
 
@@ -153,7 +175,10 @@ public class Region {
             Math.max(this.corner2.getY(), other.corner2.getY()),
             Math.max(this.corner2.getZ(), other.corner2.getZ())
         );
-        return new Region(newCorner1, newCorner2);
+        Region newRegion = new Region(newCorner1, newCorner2);
+        newRegion.adjacentRegions.addAll(this.adjacentRegions);
+        newRegion.adjacentRegions.addAll(other.adjacentRegions);
+        return newRegion;
     };
 
     /** Calculates the volume of the region */
@@ -163,6 +188,12 @@ public class Region {
         long height = corner2.getZ() - corner1.getZ() + 1;
         return length * width * height;
     };
+
+    /** Add adjacenct Region */
+    public void addAdjacentRegion(Region region) {
+        this.adjacentRegions.add(region);
+        region.adjacentRegions.add(this);
+    }
 
     /** Getters for corners */
     public Vector3i getCorner1() {
