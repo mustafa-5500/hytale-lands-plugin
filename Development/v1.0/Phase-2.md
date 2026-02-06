@@ -74,5 +74,11 @@
                     Side-note: We never removed a region after it got subtracted right? When using subtract region in the claim function, we are subtracting from the new region which should not have an empty adjacency set. However we dont cover how to remove a region from the adjacency set, so the graph, properly.
                     Side-note: Since we are now copying Regions, we need a better way of detecting equal regions, that would be using their corners, so we will implement an equals() function for the region object, so that we dont accidentally track copies of the same volume.
 
+                    Land Splitting problem: Now that we can copy regions and have a BFS algorithm for getting all connect regions, we can find the splits from the unclaim function.
+
+                        implementation: Have a Set of Sets, this will store the potential splits, iterate through the new regions and perform BFS over the new regions, the returned set of regions from the BFS is teh continuous volume graph, we can store this in the Master Set. then for every other iteration we compare it to the sets in the Master Set. We are using a Set to store the other sets so that we dont accidentally have duplicate sets in there.
+
+                            Note: Java does not iterate even once on empty iterables, so if I coded somewhere with that assumption make sure to fix that. When we do an audit of our code we will have to make sure to analyze the code for bugs like that.
+
         Implementation: We'll add Land constructor, destructor, and getters for the land. As well as put a player land selection. This will implement the create, delete, and read portions of the manager. For the update portion we will need to ensure that the land objects are valid, so not just putting the given data into the land object. For example when claiming a region we need to check that the region is valid, so adjacent to existing region, not overlapping another land, and if it overlaps a region in the land that we are adding it to, then we subdivide the region. 
 - [ ] Add chunk-based spatial indexing for performance

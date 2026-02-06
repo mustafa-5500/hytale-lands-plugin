@@ -106,7 +106,6 @@ public class LandManager {
      * Works on a copy of the regions to allow the player to cancel changes.
      * We need a deep copy of the region, since the subtract function effect the region adjacency set.
      */
-    // TODO: cover the case when the regions list get split, since a land must be continuous.
     public void unclaimRegion(UUID playerId, Region regionToUnclaim) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
@@ -117,12 +116,44 @@ public class LandManager {
                 if (region.overlaps(regionToUnclaim)) {
                     // Subtract the unclaim region from the existing region
                     Set<Region> remainingRegions = region.subtract(regionToUnclaim);
+                    region.clearAdjacentRegions();
                     regionsToRemove.add(region);
                     regionsToAdd.addAll(remainingRegions);
                 }
             }
             landRegions.removeAll(regionsToRemove);
             landRegions.addAll(regionsToAdd);
+
+            // Find the volume groups if they got Split
+            Set<Set<Region>> volumeGroups = new HashSet<>();
+            for (Region region : landRegions) {
+                // First iteration 
+                if (volumeGroups.isEmpty()) {
+                    volumeGroups.add(region.bfsRegionGraph());
+                } else {
+                    for (Set<Region> group : volumeGroups) {
+                        if (group.contains(region)) {
+                            // already in a group, skip
+                            break;
+                        } else {
+                            // Not in any of the continuous groups
+                            // Means a new volume group is formed
+                            volumeGroups.add(region.bfsRegionGraph());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // TODO: Present volumeGroups to the player,
+            // Player will confirm if they which to unclaim all the smaller volumeGroups
+            // Future Edge Case: If Land claims have districts, and different districts are controlled by different players,
+            // We need to make sure the unclaiming player cannot unclaim regions that belong to other players.
+            // Future Edge Case: If Land has subclaims, the subclaims remain even if they are left partially or fully in the wild.
+
+            // To maintain the continuous land property, set only one group of the split regions as the new land regions.
+            // Here we just pick the largest volume group for simplicity.
+            // TODO: Figure out which group is the largest based on volume.
 
             // After Players confirm their choice.
             land.setRegions(landRegions);
