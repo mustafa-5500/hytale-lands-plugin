@@ -83,13 +83,13 @@ public class Land {
         Set<Region> merged = new HashSet<>();
         for (Region region : this.regions) {
             boolean mergedFlag = false;
-            for (int i = 0; i < merged.size(); i++) {
-                Region mRegion = merged.get(i);
+            for (Region mRegion : merged) {
                 if ((mRegion.isAdjacentTo(region)) && 
                     !(mRegion.overlaps(region)) && 
                     (mRegion.isSamePlaneAs(region))) {
                     Region newRegion = mRegion.merge(region);
-                    merged.set(i, newRegion);
+                    merged.remove(mRegion);
+                    merged.add(newRegion);
                     mergedFlag = true;
                     break;
                 }
