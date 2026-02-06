@@ -102,11 +102,15 @@ public class LandManager {
         }
     }
 
-    /** Unclaims region for a land */
+    /** Unclaims region for a land
+     * Works on a copy of the regions to allow the player to cancel changes.
+     * We need a deep copy of the region, since the subtract function effect the region adjacency set.
+     */
     // TODO: cover the case when the regions list get split, since a land must be continuous.
     public void unclaimRegion(UUID playerId, Region regionToUnclaim) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
+            Set<Region> landRegions = land.getRegionsCopy();
             Set<Region> regionsToRemove = new HashSet<>();
             Set<Region> regionsToAdd = new HashSet<>();
             for (Region region : land.getRegions()) {
@@ -117,8 +121,14 @@ public class LandManager {
                     regionsToAdd.addAll(remainingRegions);
                 }
             }
-            land.unclaimRegions(regionsToRemove);
-            land.claimRegions(regionsToAdd);
+            landRegions.removeAll(regionsToRemove);
+            landRegions.addAll(regionsToAdd);
+
+            // After Players confirm their choice.
+            land.setRegions(landRegions);
+
+            // land.unclaimRegions(regionsToRemove);
+            // land.claimRegions(regionsToAdd);
         } else {
             throw new IllegalArgumentException("No land selected for the player.");
         }

@@ -103,6 +103,27 @@ public class Land {
         this.regions = merged;
     }
 
+    /** Set Regions for the land 
+     * Note: Use with caution as it replaces existing regions
+    */
+    public void setRegions(Set<Region> regions) {
+        this.regions = regions;
+    }
+
+    /** Return Copy of Regions Set
+     * This is a deep copy of the region set
+     */
+    public Set<Region> getRegionsCopy() {
+        Set<Region> copy = new HashSet<>();
+        for (Region region : this.regions) {
+            if (!copy.contains(region)){
+                Region copiedRegion = region.copy();
+                copy.addAll(copiedRegion.bfsRegionGraph());
+            }
+        }
+        return copy;
+    }
+
     /** Getters for the fields */
     public UUID getId() {
         return id;

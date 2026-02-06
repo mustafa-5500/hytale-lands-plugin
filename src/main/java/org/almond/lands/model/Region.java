@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 import com.hypixel.hytale.math.vector.Vector3i;
 
 public class Region {
@@ -131,7 +133,7 @@ public class Region {
         for (Region region1 : remainingRegions) {
             for (Region region2 : remainingRegions) {
                 if (region1 != region2 && region1.isAdjacentTo(region2)) {
-                    region1.adjacentRegions.add(region2);
+                    region1.addAdjacentRegion(region2);
                 }
             }
         }
@@ -140,7 +142,7 @@ public class Region {
         for (Region adj : this.adjacentRegions) {
             for (Region region : remainingRegions) {
                 if (region.isAdjacentTo(adj)) {
-                    region.adjacentRegions.add(adj);
+                    region.addAdjacentRegion(adj);
                 }
             }
         }
@@ -175,8 +177,8 @@ public class Region {
             Math.max(this.corner2.getZ(), other.corner2.getZ())
         );
         Region newRegion = new Region(newCorner1, newCorner2);
-        newRegion.adjacentRegions.addAll(this.adjacentRegions);
-        newRegion.adjacentRegions.addAll(other.adjacentRegions);
+        newRegion.addAdjacentRegions(this.adjacentRegions);
+        newRegion.addAdjacentRegions(other.adjacentRegions);
         return newRegion;
     };
 
@@ -188,10 +190,97 @@ public class Region {
         return length * width * height;
     };
 
-    /** Add adjacenct Region */
+    /** Add adjacenct Region
+     *  Only adds if they are indeed adjacent, to maintain integrity.
+     */
     public void addAdjacentRegion(Region region) {
-        this.adjacentRegions.add(region);
-        region.adjacentRegions.add(this);
+        if(this.isAdjacentTo(region)){
+            this.adjacentRegions.add(region);
+            region.adjacentRegions.add(this);   
+        }
+    }
+
+    /** Region equals to function */
+    @Override
+    public boolean equals(Object obj) {
+        // Check object reference hash
+        if (this == obj) return true;
+        // Cover null and class type difference
+        if (obj == null || this.getClass() != obj.getClass()) return false;
+        // Cast and compare corners
+        Region other = (Region) obj;
+        return corner1.equals(other.corner1) && corner2.equals(other.corner2);
+    }
+
+    /** Adds all adjacent Regions
+     *  Checks adjacency before adding.
+     */
+    public void addAdjacentRegions(Set<Region> regions) {
+        for(Region region : regions){
+            this.addAdjacentRegion(region);
+        }
+    }
+
+    /** Remove adjacent Region */
+    public void removeAdjacentRegion(Region region) {
+        this.adjacentRegions.remove(region);
+        region.adjacentRegions.remove(this);
+    }
+
+    /** Empty adjacent set
+     *  Used when we are removing a region from the continuous graph it was in.
+     *  So remove its references from the other regions its adjacent to as well.
+     */
+    public void clearAdjacentRegions() {
+        for (Region adj : this.adjacentRegions) {
+                adj.removeAdjacentRegion(this);
+         }
+        this.adjacentRegions.clear();
+    }
+
+    /** Creates a copy of the region
+     *  Recursively copies adjacent regions as well to maintain integrity.
+     */
+    public Region copy() {
+        return this.copyHelper(new HashMap<>());
+    }
+
+    /** Helper recursive function, to deeply copy and keep track of copied regions */
+    private Region copyHelper(Map<Region, Region> copiedRegions) {
+        // If already copied, return the copy
+        if (copiedRegions.containsKey(this)) {
+            return copiedRegions.get(this);
+        }
+        // Create a new copy of this region
+        Region newRegion = new Region(this.corner1, this.corner2);
+        copiedRegions.put(this, newRegion);
+        // Recursively copy adjacent regions
+        for (Region adj : this.adjacentRegions) {
+            Region adjCopy = adj.copyHelper(copiedRegions);
+            newRegion.addAdjacentRegion(adjCopy);
+        }
+        return newRegion;
+    }
+
+    /** Perform a Breadth-First Search, BFS, over the region graph starting from this region */
+    public Set<Region> bfsRegionGraph() {
+        Set<Region> visited = new HashSet<>();
+        List<Region> queue = new ArrayList<>();
+        queue.add(this);
+        visited.add(this);
+
+        while (!queue.isEmpty()) {
+            Region current = queue.remove(0);
+            // Explore adjacent regions
+            for (Region neighbor : current.adjacentRegions) {
+                // If not visited, add to queue, and mark visited
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+        return visited;
     }
 
     /** Getters for corners */
