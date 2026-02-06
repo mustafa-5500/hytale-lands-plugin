@@ -80,5 +80,7 @@
 
                             Note: Java does not iterate even once on empty iterables, so if I coded somewhere with that assumption make sure to fix that. When we do an audit of our code we will have to make sure to analyze the code for bugs like that.
 
+                    Land Volume: Now that we have the lists of split, we need to calculate the volume, which is just iterating through all the region and summing their volume. Now, i dont think storing volume would be that space intensive, compared to calculating it everytime we need to find the volume, so we will also store the volume as a long. Calculate volume everytime a claim or unclaim command occurs, as well as on land creation.
+
         Implementation: We'll add Land constructor, destructor, and getters for the land. As well as put a player land selection. This will implement the create, delete, and read portions of the manager. For the update portion we will need to ensure that the land objects are valid, so not just putting the given data into the land object. For example when claiming a region we need to check that the region is valid, so adjacent to existing region, not overlapping another land, and if it overlaps a region in the land that we are adding it to, then we subdivide the region. 
 - [ ] Add chunk-based spatial indexing for performance

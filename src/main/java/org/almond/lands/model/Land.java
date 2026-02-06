@@ -21,6 +21,7 @@ public class Land {
     private Map<UUID, String> members;  // Player UUID -> Role name
     private Map<String, LandRole> roles; // Role name -> Role definition
     private long createdAt;             // Timestamp
+    private long volume;                // Cached volume of the land
 
     /**
      * Returns a map of default roles for a land.
@@ -66,16 +67,19 @@ public class Land {
         // If roles is null, use default roles
         this.roles = (roles != null) ? roles : getDefaultRoles();
         this.createdAt = createdAt;
+        this.volume = getVolume();
     }
 
     /** Claims new regions for the land */
     public void claimRegions(Set<Region> newRegions) {
         this.regions.addAll(newRegions);
+        this.volume = getVolume();
     }
 
     /** Unclaims regions from the land */
     public void unclaimRegions(Set<Region> regionsToUnclaim) {
         this.regions.removeAll(regionsToUnclaim);
+        this.volume = getVolume();
     }
 
     /** Merges adjacent regions to optimize storage */
@@ -122,6 +126,15 @@ public class Land {
             }
         }
         return copy;
+    }
+
+    /** Get volume */
+    public long getVolume() {
+        long volume = 0;
+        for (Region region : this.regions) {
+            volume += region.getVolume();
+        }
+        return volume;
     }
 
     /** Getters for the fields */

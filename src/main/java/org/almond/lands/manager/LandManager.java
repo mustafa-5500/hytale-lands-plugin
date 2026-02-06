@@ -125,41 +125,59 @@ public class LandManager {
             landRegions.addAll(regionsToAdd);
 
             // Find the volume groups if they got Split
-            Set<Set<Region>> volumeGroups = new HashSet<>();
+            Map<Set<Region>, Long> volumeGroups = new HashMap<>();
             for (Region region : landRegions) {
                 // First iteration 
                 if (volumeGroups.isEmpty()) {
-                    volumeGroups.add(region.bfsRegionGraph());
+                    volumeGroups.put(region.bfsRegionGraph(), 0L);
                 } else {
-                    for (Set<Region> group : volumeGroups) {
+                    for (Set<Region> group : volumeGroups.keySet()) {
                         if (group.contains(region)) {
                             // already in a group, skip
                             break;
                         } else {
                             // Not in any of the continuous groups
                             // Means a new volume group is formed
-                            volumeGroups.add(region.bfsRegionGraph());
+                            volumeGroups.put(region.bfsRegionGraph(), 0L);
                             break;
                         }
                     }
                 }
             }
 
+            // Calculate the volume for each group
+            for (Set<Region> group : volumeGroups.keySet()) {
+                Long groupVolume = 0L;
+                for (Region region : group) {
+                    groupVolume += region.getVolume();
+                }
+                volumeGroups.put(group, groupVolume);
+            }
+
+            
+
+            // To maintain the continuous land property, set only one group of the split regions as the new land regions.
+            // Here we just pick the largest volume group for simplicity.
+            Set<Region> largestGroup = null;
+            long maxVolume = 0;
+            for (Map.Entry<Set<Region>, Long> entry : volumeGroups.entrySet()) {
+                if (entry.getValue() > maxVolume) {
+                    maxVolume = entry.getValue();
+                    largestGroup = entry.getKey();
+                }
+            }
+            if (largestGroup != null) {
+                landRegions = largestGroup;
+            }
+            
             // TODO: Present volumeGroups to the player,
             // Player will confirm if they which to unclaim all the smaller volumeGroups
             // Future Edge Case: If Land claims have districts, and different districts are controlled by different players,
             // We need to make sure the unclaiming player cannot unclaim regions that belong to other players.
             // Future Edge Case: If Land has subclaims, the subclaims remain even if they are left partially or fully in the wild.
-
-            // To maintain the continuous land property, set only one group of the split regions as the new land regions.
-            // Here we just pick the largest volume group for simplicity.
-            // TODO: Figure out which group is the largest based on volume.
-
+            
             // After Players confirm their choice.
             land.setRegions(landRegions);
-
-            // land.unclaimRegions(regionsToRemove);
-            // land.claimRegions(regionsToAdd);
         } else {
             throw new IllegalArgumentException("No land selected for the player.");
         }
