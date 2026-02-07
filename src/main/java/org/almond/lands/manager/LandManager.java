@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
 import java.lang.System;
+import java.util.EnumSet;
 import org.almond.lands.model.Land;
 import org.almond.lands.model.Region;
 import org.almond.lands.model.LandRole;
