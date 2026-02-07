@@ -1,28 +1,33 @@
 package org.almond.lands.model;
 
 public enum LandPermission {
-    BUILD("Place blocks", false),
-    BREAK("Break blocks", false),
-    INTERACT("Use doors/levers", false),
-    CONTAINER("Access chests", false),
-    MANAGE_MEMBERS("Add/remove members", true),   // admin perm
-    MANAGE_ROLES("Edit roles", true),             // admin perm
-    CLAIM("Create regions", true),                // admin perm
-    UNCLAIM("Delete regions", true);              // admin perm
+    BUILD("Place blocks", 0),
+    BREAK("Break blocks", 0),
+    INTERACT("Use doors/levers", 0),
+    CONTAINER("Access chests", 0),
+    MANAGE_MEMBERS("Add/remove members", 10),   // admin perm
+    MANAGE_ROLES("Edit roles", 20),             // admin perm
+    CLAIM("Create regions", 30),                // admin perm
+    UNCLAIM("Delete regions", 50);              // admin perm
 
     private final String description;
-    private final boolean isAdmin;
+    private final int weight;
 
     // Enum constructors are implicitly private
-    LandPermission(String description, boolean isAdmin) {
+    LandPermission(String description, int weight) {
         this.description = description;
-        this.isAdmin = isAdmin;
+        this.weight = weight;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
+
+    public int getWeight() {
+        return this.weight;
+    }
+    
     public boolean isAdmin() {
-        return isAdmin;
+        return this.weight > 0;
     }
 }

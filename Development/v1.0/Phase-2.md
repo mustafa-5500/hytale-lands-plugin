@@ -96,4 +96,8 @@
 
         Role Management: Creating a role, we just need to check permissions then check if the role wont conflict with another role in terms of name. Deleting role, check if the player has permissions, now should we allow the deletion of the default roles? I say yes, since players can have the freedom to set their own roles with different names. Now what happens to the players who's roles have been deleted? Those players are still members of the land but will need another role. We will mark admin perms such as managing players, roles, and claiming, to differentiate them from member perms like placing and breaking blocks. So players will now be given roles which do not have admin perms, if no such role exists than a default member role will be created.
 
+        Permission Management: Player permissions will be managed through the roles they are assigned, players with a role that has the manage role permission set can go change the permissions of other roles, however they can't change their own roles.
+
+            Side-note: lets also make it so that players cannot add or remove players to the role they have. We will need to somehow determine a hierarchy of roles depending on the permissions they have. I guess this mainly effects admin roles, so the heirarchy could be a some of all the admin roles they have. We can store that as an int weight perhaps, that can be used to order the admin roles.
+
 - [ ] Add chunk-based spatial indexing for performance

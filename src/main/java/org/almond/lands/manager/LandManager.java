@@ -368,6 +368,71 @@ public class LandManager {
         }
     }
 
+    /** Set Role Permissions */
+    public void setRolePermissions(UUID playerId, String roleName, Set<LandPermission> newPermissions) {
+        Land land = getSelectedLandForPlayer(playerId);
+        // Check if the player selected a land
+        if (land != null) {
+
+            // Check if player is a member of the land
+            if (!land.getMembers().containsKey(playerId)) {
+                throw new IllegalArgumentException("Player is not a member of the land.");
+            }
+
+            // Check if the role exists in the land
+            if (!land.getRoles().containsKey(roleName)) {
+                throw new IllegalArgumentException("Role " + roleName + " does not exist in the land.");
+            }
+
+            // Check if the player has permission to manage roles
+            LandRole playerRole = land.getRoles().get(land.getMembers().get(playerId));
+            if (playerRole == null || 
+                !land.getOwner().equals(playerId) || 
+                !playerRole.getPermissions().contains(LandPermission.MANAGE_ROLES)) {
+                throw new IllegalArgumentException("Player does not have permission to manage roles on this land.");
+            }
+
+            // Player cannot modify their own role, unless owner
+            if (land.getMembers().get(playerId).equals(roleName) && 
+                !land.getOwner().equals(playerId)) {
+                throw new IllegalArgumentException("Player cannot modify their own role.");
+            }
+
+            // Player cannot modify roles with higher admin weights than their own role
+            if (land.getRoles().get(roleName).getWeight() > playerRole.getWeight() && 
+                !land.getOwner().equals(playerId)) {
+                throw new IllegalArgumentException("Player cannot modify roles with more permissions.");
+            }
+
+            // Update the permissions for the role
+            LandRole role = land.getRoles().get(roleName);
+            role.setPermissions(newPermissions);
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Check if a player has a specific permission for the given land */
+    public boolean checkPermission(UUID playerId, Land land, LandPermission permission) {
+        if (land.getOwner().equals(playerId)) {
+            return true; // Owner has all permissions
+        }
+        String roleName = land.getMembers().get(playerId);
+        if (roleName == null) {
+            return false; // Not a member, no permissions
+        }
+        LandRole role = land.getRoles().get(roleName);
+        if (role == null) {
+            return false; // Role not found, no permissions
+        }
+        return role.getPermissions().contains(permission);
+    }
+
+    /** Get player role in a land */
+    public String getPlayerRole(UUID playerId, Land land) {
+        return land.getMembers().get(playerId);
+    }
+
     /** Retrieves a land that contains the given position */
     public Land getLandAt(Vector3i position) {
         for (Land land : landsById.values()) {
