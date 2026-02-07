@@ -128,6 +128,23 @@ public class Land {
         return copy;
     }
 
+    /** Add Role */
+    public void addRole(String roleName, LandRole landRole) {
+        // Redundant check since LandManager should handle this, but added for safety
+        if (this.roles.containsKey(roleName)) {
+            throw new IllegalArgumentException("Role " + roleName + " already exists in the land.");
+        }
+        this.roles.put(roleName, landRole);
+    }
+
+    /** Remove Role */
+    public void removeRole(String roleName) {
+        if (!this.roles.containsKey(roleName)) {
+            throw new IllegalArgumentException("Role " + roleName + " does not exist in the land.");
+        }
+        this.roles.remove(roleName);
+    }
+
     /** Get volume */
     public long getVolume() {
         long volume = 0;

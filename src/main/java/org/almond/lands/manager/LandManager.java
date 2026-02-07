@@ -10,13 +10,23 @@ import java.util.HashSet;
 import java.lang.System;
 import org.almond.lands.model.Land;
 import org.almond.lands.model.Region;
+import org.almond.lands.model.LandRole;
+import org.almond.lands.model.LandPermission;
 import com.hypixel.hytale.math.vector.Vector3i;
 
 public class LandManager {
 
     private Map<UUID, Land> landsById = new HashMap<>();
     private Map<String, Land> landsByName = new HashMap<>();
-    private Map<UUID, UUID> selectedLandByPlayer = new HashMap<>();
+    private Map<UUID, UUID> selectedLandByPlayer = new HashMap<>(); // Player UUID -> Selected Land UUID
+
+    /** LandManager Constructor */
+    public LandManager() {
+        // Initialize with empty maps
+        Map<UUID, Land> landsById = new HashMap<>();
+        Map<String, Land> landsByName = new HashMap<>();
+        Map<UUID, UUID> selectedLandByPlayer = new HashMap<>();
+    }
 
     /** Creates a new land with default roles and adds it to the manager */
     public void createLand(String name, UUID ownerId, Region region) {
@@ -178,6 +188,180 @@ public class LandManager {
             
             // After Players confirm their choice.
             land.setRegions(landRegions);
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Trust Player
+     *  Give players a member role to the land.
+     */
+    public void trustPlayer(UUID playerId, UUID targetPlayerId, String roleName) {
+        Land land = getSelectedLandForPlayer(playerId);
+        // Check if the player selected a land
+        if (land != null) {
+
+            // Cannot assign role if not a member
+            if (land.getMembers().containsKey(targetPlayerId)) {
+                throw new IllegalArgumentException("Player is already a member of the land.");
+            }
+
+            // Cannot assign role to the land owner
+            if (land.getOwner().equals(targetPlayerId)) {
+                throw new IllegalArgumentException("Cannot assign role to the land owner.");
+            }
+
+            // Check if the player has permission to manage members
+            LandRole playerRole = land.getRoles().get(land.getMembers().get(playerId));
+            if (playerRole == null || 
+                !land.getOwner().equals(playerId) || 
+                !playerRole.getPermissions().contains(LandPermission.MANAGE_MEMBERS)) {
+                throw new IllegalArgumentException("Player does not have permission to manage members on this land.");
+            }
+
+            // Check if the role exists in the land
+            if (!land.getRoles().containsKey(roleName)) {
+                throw new IllegalArgumentException("Role " + roleName + " does not exist in the land.");
+            }
+
+            // Assign the role to the target player
+            land.getMembers().put(targetPlayerId, roleName);
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Untrust Player
+     *  Remove players from the land.
+     */
+    public void untrustPlayer(UUID playerId, UUID targetPlayerId) {
+        Land land = getSelectedLandForPlayer(playerId);
+        // Check if the player selected a land
+        if (land != null) {
+
+            // Cannot untrust if target player is not a member
+            if (!land.getMembers().containsKey(targetPlayerId)) {
+                throw new IllegalArgumentException("Player is not a member of the land.");
+            }
+
+            // Cannot untrust themselves, though players can leave lands
+            if (playerId.equals(targetPlayerId)) {
+                throw new IllegalArgumentException("Player cannot untrust themselves.");
+            }
+
+            // Cannot untrust if not a member
+            if (!land.getMembers().containsKey(targetPlayerId)) {
+                throw new IllegalArgumentException("Player is not a member of the land.");
+            }
+
+            // Cannot untrust the land owner
+            if (land.getOwner().equals(targetPlayerId)) {
+                throw new IllegalArgumentException("Cannot untrust the land owner.");
+            }
+
+            // Check if the player has permission to manage members
+            LandRole playerRole = land.getRoles().get(land.getMembers().get(playerId));
+            if (playerRole == null || 
+                !land.getOwner().equals(playerId) || 
+                !playerRole.getPermissions().contains(LandPermission.MANAGE_MEMBERS)) {
+                throw new IllegalArgumentException("Player does not have permission to manage members on this land.");
+            }
+
+            // Remove the target player from members
+            land.getMembers().remove(targetPlayerId);
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Create Role */
+    public void createRole(UUID playerId, String roleName, Set<LandPermission> permissions) {
+        Land land = getSelectedLandForPlayer(playerId);
+        // Check if the player selected a land
+        if (land != null) {
+
+            // Check if player is a member of the land
+            if (!land.getMembers().containsKey(playerId)) {
+                throw new IllegalArgumentException("Player is not a member of the land.");
+            }
+
+            // Check if the role already exists in the land
+            if (land.getRoles().containsKey(roleName)) {
+                throw new IllegalArgumentException("Role " + roleName + " already exists in the land.");
+            }
+
+            // Check if the player has permission to manage roles
+            LandRole playerRole = land.getRoles().get(land.getMembers().get(playerId));
+            if (playerRole == null || 
+                !land.getOwner().equals(playerId) || 
+                !playerRole.getPermissions().contains(LandPermission.MANAGE_ROLES)) {
+                throw new IllegalArgumentException("Player does not have permission to manage roles on this land.");
+            }
+
+            // Create and add the new role to the land
+            LandRole newRole = new LandRole(roleName, permissions);
+            land.addRole(roleName, newRole);
+        } else {
+            throw new IllegalArgumentException("No land selected for the player.");
+        }
+    }
+
+    /** Delete Role */
+    public void deleteRole(UUID playerId, String roleName) {
+        Land land = getSelectedLandForPlayer(playerId);
+        // Check if the player selected a land
+        if (land != null) {
+
+            // Check if player is a member of the land
+            if (!land.getMembers().containsKey(playerId)) {
+                throw new IllegalArgumentException("Player is not a member of the land.");
+            }
+
+            // Check if the role exists in the land
+            if (!land.getRoles().containsKey(roleName)) {
+                throw new IllegalArgumentException("Role " + roleName + " does not exist in the land.");
+            }
+
+            // Check if the player has permission to manage roles
+            LandRole playerRole = land.getRoles().get(land.getMembers().get(playerId));
+            if (playerRole == null || 
+                !land.getOwner().equals(playerId) || 
+                !playerRole.getPermissions().contains(LandPermission.MANAGE_ROLES)) {
+                throw new IllegalArgumentException("Player does not have permission to manage roles on this land.");
+            }
+
+            // Remove the role from the land
+            land.removeRole(roleName);
+
+            // Find a non-admin role to reassign members
+            String defaultRoleName = null;
+            for (LandRole role : land.getRoles().values()) {
+                if (!role.isAdmin()) {
+                    defaultRoleName = role.getName();
+                    break;
+                }
+            }
+
+            // If no non-admin role exists, create a default "member" role
+            if (defaultRoleName == null) {
+                defaultRoleName = "member";
+                Set<LandPermission> memberPerms = EnumSet.of(
+                    LandPermission.BUILD,
+                    LandPermission.BREAK,
+                    LandPermission.INTERACT,
+                    LandPermission.CONTAINER
+                );
+                LandRole defaultRole = new LandRole(defaultRoleName, memberPerms);
+                land.addRole(defaultRoleName, defaultRole);
+            }
+
+            // Reassign members with the deleted role to a default role (e.g., "member")
+            for (Map.Entry<UUID, String> entry : land.getMembers().entrySet()) {
+                if (entry.getValue().equals(roleName)) {
+                    land.getMembers().put(entry.getKey(), defaultRoleName);
+                }
+            }
+            
         } else {
             throw new IllegalArgumentException("No land selected for the player.");
         }
