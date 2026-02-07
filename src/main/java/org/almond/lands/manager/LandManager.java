@@ -43,6 +43,13 @@ public class LandManager {
     public void deleteLand(String name) {
         Land land = getLandByName(name);
         if (land != null) {
+            // Only owner can delete the land
+            if (!land.getOwner().equals(land.getMembers().keySet())) {
+                throw new IllegalArgumentException("Only the land owner can delete the land.");
+            }
+            // TODO: Handle unselecting the land for players who have it selected (not implemented here for simplicity)
+            // TODO: Handle notifying members of the land deletion (not implemented here for simplicity)
+            // TODO: Go over what happens to members of the land (not implemented here for simplicity)
             landsById.remove(land.getId());
             landsByName.remove(name);
         } else {
@@ -78,6 +85,11 @@ public class LandManager {
     public void claimRegion(UUID playerId, Region newRegion) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
+            // Check permissions
+            if (!checkPermission(playerId, land, LandPermission.CLAIM)) {
+                throw new IllegalArgumentException("Player does not have permission to claim regions on this land.");
+            }
+
             Boolean adjacent = false;
             Set<Region> newRegions = new HashSet<>();
             newRegions.add(newRegion);
@@ -120,6 +132,12 @@ public class LandManager {
     public void unclaimRegion(UUID playerId, Region regionToUnclaim) {
         Land land = getSelectedLandForPlayer(playerId);
         if (land != null) {
+
+            // Check permissions
+            if (!checkPermission(playerId, land, LandPermission.UNCLAIM)) {
+                throw new IllegalArgumentException("Player does not have permission to unclaim regions on this land.");
+            }
+
             Set<Region> landRegions = land.getRegionsCopy();
             Set<Region> regionsToRemove = new HashSet<>();
             Set<Region> regionsToAdd = new HashSet<>();
