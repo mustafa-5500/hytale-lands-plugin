@@ -1,5 +1,5 @@
 ### Phase 2: Managers
-- [✓] Implement `SelectionManager` (player corner tracking)
+- [x] Implement `SelectionManager` (player corner tracking)
     ### Overview: SelectionManager Implementation
     SelectionManager: The function to track the corners that a player selects when creating a selection to claim. Creates a region object from the selection. The region object just needs to be given two vector3i objects, it will then create a selection using the max and min coordinates from those two vector3i object. So all the SelectionManager needs to do is get the selection from the player and create a region for land claim with it.
 
@@ -7,7 +7,7 @@
 
         Implementation: The manager stores the two corners that players have selected, so we will have two maps, for player id and corner. There will be set position grammars for each corner, and a boolean for when the selection has been completed. Then create a new region, The region constructor will already create the region using the max corners, so we just need to give our selected corners to it. Then the created region will be passed back to the selection command which will send it to the land manager to be added to a land.
 
-- [ ] Implement `LandManager` (CRUD, position lookup)
+- [x] Implement `LandManager` (CRUD, position lookup)
     ### Overview: LandManager Implementation
     LandManager: Manage the interaction between the Land commands and listeners and the Land objects. For example will implement regions becoming part of a land, including edge cases for overlapping region and how to split them into non overlapping regions. As well as optomizations such as merging regions into single large cuboid regions, to reduce the reduce the space taken by the land object.
 
@@ -101,3 +101,7 @@
             Side-note: lets also make it so that players cannot add or remove players to the role they have. We will need to somehow determine a hierarchy of roles depending on the permissions they have. I guess this mainly effects admin roles, so the heirarchy could be a some of all the admin roles they have. We can store that as an int weight perhaps, that can be used to order the admin roles.
 
 - [ ] Add chunk-based spatial indexing for performance
+    ### Overview: Chunk based spatial indexing Implementation
+        Object selection based on given position: Currently for functions like getLandAt() we brute force through all lands and then brute force through all regions in those lands to check if a given block position is in the land, which is compotationally costly, especially if we have many lands and many reasons to get lands at positions, such as event listeners. So to optomize finding lands we can implement a chunk based spatial look up, so instead of looping through all lands, we will use a hash map, where the key is the chunk and the value is the land in the chunk. However since land claiming has a granularity of 1 block, multiple lands could exist in a chunk, and if chunks are 2D, so the entire horizontal portion of the world is 1 chunk then there could be multiple lands on multiple levels of the chunk. So instead the Map will be Chunk to Set of land references. so instead of iterating through every land in the world we will now only iterate through every land in that chunk. Since chunks are 32 by 32, they are a 1024 compresion of 2D dimensions, so 1024 2D blocks can exist in one chunk. Therefore the added memory space to keep another map is not unoptimal compared to the lookup savings.
+
+            Implementation: Have a hash map storing Chunk 

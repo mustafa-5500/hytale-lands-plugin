@@ -54,11 +54,11 @@ This file defines a custom crafting recipe that can be used at a crafting bench 
 ]
 ```
 
-| Field | Description |
-|-------|-------------|
-| **Input** | Array of required ingredients |
-| **ItemId** | Game item identifier |
-| **Quantity** | Amount needed |
+| Field        | Description                   |
+| ------------ | ----------------------------- |
+| **Input**    | Array of required ingredients |
+| **ItemId**   | Game item identifier          |
+| **Quantity** | Amount needed                 |
 
 **Multiple inputs example:**
 ```json
@@ -77,11 +77,11 @@ This file defines a custom crafting recipe that can be used at a crafting bench 
 }
 ```
 
-| Field | Description |
-|-------|-------------|
+| Field             | Description            |
+| ----------------- | ---------------------- |
 | **PrimaryOutput** | The main item produced |
-| **ItemId** | Output item identifier |
-| **Quantity** | Amount produced |
+| **ItemId**        | Output item identifier |
+| **Quantity**      | Amount produced        |
 
 **Note:** This example is intentionally simple (10 dirt → 1 dirt) for demonstration. Real recipes would produce different/useful items.
 
@@ -99,12 +99,12 @@ This file defines a custom crafting recipe that can be used at a crafting bench 
 ]
 ```
 
-| Field | Description |
-|-------|-------------|
+| Field                | Description                            |
+| -------------------- | -------------------------------------- |
 | **BenchRequirement** | Array of crafting station requirements |
-| **Id** | Crafting station identifier |
-| **Type** | Station type (usually "Crafting") |
-| **Categories** | Recipe category tabs |
+| **Id**               | Crafting station identifier            |
+| **Type**             | Station type (usually "Crafting")      |
+| **Categories**       | Recipe category tabs                   |
 
 **Crafting Station IDs:**
 - `"Fieldcraft"` - Basic field crafting table
